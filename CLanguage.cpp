@@ -1,21 +1,20 @@
+#include <queue>
 #include "CLanguage.h"
 
-CLanguage::CLanguage(const std::string & inputFileName, std::ostream & outputStream)
-		: _input(inputFileName)
-		, _output(outputStream)
+CLanguage::CLanguage(const std::string &inputFileName, std::ostream &outputStream)
+		: _input(inputFileName), _output(outputStream)
 {
-	_grammarType = DetermineGrammarType(inputFileName);
-	if (_grammarType == LeftLinear)
+	_linearGrammarType = DetermineLinearGrammarType(inputFileName);
+	if (_linearGrammarType == None)
 	{
-		ReadLeftLinearGrammar();
+		throw std::invalid_argument("не удалось определить тип грамматики");
 	}
-	else
-	{
-		ReadRightLinearGrammar();
-	}
+	ReadLinearGrammar();
+	ValidateLinearGrammar();
+	DeterminateAutomaton();
 }
 
-GrammarType CLanguage::DetermineGrammarType(const std::string & inputFileName)
+LinearGrammarType CLanguage::DetermineLinearGrammarType(const std::string &inputFileName)
 {
 	CInput input(inputFileName);
 	input.SkipArguments<std::wstring>(2);
@@ -28,41 +27,81 @@ GrammarType CLanguage::DetermineGrammarType(const std::string & inputFileName)
 	return (islower(firstRule[0])) ? RightLinear : LeftLinear;
 }
 
-void CLanguage::ReadLeftLinearGrammar()
+void CLanguage::ReadLinearGrammar()
 {
-	wchar_t toState;
-	_input.ReadArguments(toState);
-	_input.SkipArgument<std::wstring>();
+	while (true)
+	{
+		wchar_t argument0;
+		_input.ReadArguments(argument0);
+		_input.SkipArgument<std::wstring>();
 
-	wchar_t fromState;
-	_input.ReadArguments(fromState);
+		while (true)
+		{
+			_input.SkipSymbols({' '});
+			wchar_t argument1;
+			wchar_t argument2;
+			_input.ReadArguments(argument1, argument2);
 
-	wchar_t signal;
-	_input.ReadArguments(signal);
+			wchar_t & fromState = (_linearGrammarType == LeftLinear) ? argument1 : argument0;
+			wchar_t & signal = (_linearGrammarType == LeftLinear) ? argument2 : argument1;
+			wchar_t & toState = (_linearGrammarType == LeftLinear) ? argument0 : argument2;
+			AddToTransitionMap(fromState, signal, toState);
 
-	AddToTransitionMap(fromState, signal, toState);
-}
-
-void CLanguage::ReadRightLinearGrammar()
-{
-	wchar_t fromState;
-	_input.ReadArguments(fromState);
-	_input.SkipArgument<std::wstring>();
-
-	wchar_t toState;
-	_input.ReadArguments(toState);
-
-	wchar_t signal;
-	_input.ReadArguments(signal);
-
-	AddToTransitionMap(fromState, signal, toState);
+			_input.SkipSymbols({' '});
+			if (!_input.SkipArgument<wchar_t>())
+			{
+				break;
+			}
+		}
+		if (!_input.SkipLine())
+		{
+			break;
+		}
+	}
 }
 
 void CLanguage::AddToTransitionMap(wchar_t fromState, wchar_t signal, wchar_t toState)
 {
-	std::unordered_map<wchar_t, std::vector<wchar_t>> transitions =
+	std::unordered_map<wchar_t, std::vector<wchar_t>> &transitions =
 			(*_transitionMap.try_emplace(fromState, std::unordered_map<wchar_t, std::vector<wchar_t>>()).first).second;
 
-	std::vector<wchar_t> toStates = (*transitions.try_emplace(signal, std::vector<wchar_t>()).first).second;
+	std::vector<wchar_t> &toStates = (*transitions.try_emplace(signal, std::vector<wchar_t>()).first).second;
 	toStates.emplace_back(toState);
 }
+
+void CLanguage::ValidateLinearGrammar()
+{
+	switch(_linearGrammarType)
+	{
+		case LeftLinear:
+			if (_transitionMap.find(CLanguage::_endState) == _transitionMap.end())
+			{
+				throw std::invalid_argument("грамматика не имеет конечного состояния");
+			}
+			break;
+		case RightLinear:
+			if (_transitionMap.find(CLanguage::_startState) == _transitionMap.end())
+			{
+				throw std::invalid_argument("грамматика не имеет начального состояния");
+			}
+			break;
+		default:
+			break;
+	}
+}
+
+void CLanguage::DeterminateAutomaton()
+{
+	switch(_linearGrammarType)
+	{
+		case LeftLinear:
+			break;
+		case RightLinear:
+			break;
+		default:
+			break;
+	}
+}
+
+wchar_t CLanguage::_startState = 'S';
+wchar_t CLanguage::_endState = 'H';
