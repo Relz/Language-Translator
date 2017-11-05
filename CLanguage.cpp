@@ -39,9 +39,30 @@ void CLanguage::ReadLeftLinearGrammar()
 
 	wchar_t signal;
 	_input.ReadArguments(signal);
+
+	AddToTransitionMap(fromState, signal, toState);
 }
 
 void CLanguage::ReadRightLinearGrammar()
 {
+	wchar_t fromState;
+	_input.ReadArguments(fromState);
+	_input.SkipArgument<std::wstring>();
 
+	wchar_t toState;
+	_input.ReadArguments(toState);
+
+	wchar_t signal;
+	_input.ReadArguments(signal);
+
+	AddToTransitionMap(fromState, signal, toState);
+}
+
+void CLanguage::AddToTransitionMap(wchar_t fromState, wchar_t signal, wchar_t toState)
+{
+	std::unordered_map<wchar_t, std::vector<wchar_t>> transitions =
+			(*_transitionMap.try_emplace(fromState, std::unordered_map<wchar_t, std::vector<wchar_t>>()).first).second;
+
+	std::vector<wchar_t> toStates = (*transitions.try_emplace(signal, std::vector<wchar_t>()).first).second;
+	toStates.emplace_back(toState);
 }

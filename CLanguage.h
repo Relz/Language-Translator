@@ -21,11 +21,12 @@ private:
 	GrammarType DetermineGrammarType(const std::string & inputFilename);
 	void ReadLeftLinearGrammar();
 	void ReadRightLinearGrammar();
+	void AddToTransitionMap(wchar_t fromState, wchar_t signal, wchar_t toState);
 
 	CInput _input;
 	COutput _output;
 	GrammarType _grammarType;
-	std::unordered_map<wchar_t, std::pair<wchar_t, wchar_t>> _transitionMap;
+	std::unordered_map<wchar_t, std::unordered_map<wchar_t, std::vector<wchar_t>>> _transitionMap;
 };
 
 
