@@ -10,7 +10,12 @@ int main(int argc, char *argv[]) {
 	}
 	try
 	{
+		const std::string nonDeterministicDiagramFileName = "beforeDiagram.png";
+		const std::string deterministicDiagramFileName = "afterDiagram.png";
 		CLanguage language(argv[1]);
+		language.setShowStateComponents(true);
+		language.CreateNonDeterministicDiagram(nonDeterministicDiagramFileName);
+		language.CreateDeterministicDiagram(deterministicDiagramFileName);
 	}
 	catch (std::invalid_argument & invalidArgument)
 	{

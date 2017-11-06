@@ -3,5 +3,5 @@ project(LanguageTranslator)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(SOURCE_FILES main.cpp CLanguage.cpp CLanguage.h Input/Constant.h)
+set(SOURCE_FILES main.cpp CLanguage.cpp CLanguage.h Input/Constant.h UnorderedSetHash.h)
 add_executable(LanguageTranslator ${SOURCE_FILES})
