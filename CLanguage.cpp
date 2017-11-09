@@ -44,7 +44,7 @@ LinearGrammarType CLanguage::DetermineLinearGrammarType(const std::string &input
 	{
 		return None;
 	}
-	return (islower(firstRule[0])) ? RightLinear : LeftLinear;
+	return (isdigit(firstRule[0]) || islower(firstRule[0])) ? RightLinear : LeftLinear;
 }
 
 void CLanguage::ReadLinearGrammar()
