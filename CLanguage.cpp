@@ -164,7 +164,14 @@ void CLanguage::DeterminateAutomaton()
 				State newState;
 				if (processedStatesComponents.find(newStateSignalTransitions.second) != processedStatesComponents.end())
 				{
-					newState = _statesComponentsToAssociatedState.at(newStateSignalTransitions.second);
+					if (_statesComponentsToAssociatedState.find(newStateSignalTransitions.second) != _statesComponentsToAssociatedState.end())
+					{
+						newState = _statesComponentsToAssociatedState.at(newStateSignalTransitions.second);
+					}
+					else
+					{
+						newState = *newStateSignalTransitions.second.begin();
+					}
 				}
 				else if (newStateSignalTransitions.second == stateComponents)
 				{
